@@ -159,6 +159,15 @@ function render() {
     sumEl.innerHTML = '<div class="empty">Noch keine Ausgaben.</div>';
   } else {
     const { transactions, balances } = calcSettlement(data);
+
+    const mostOwes = PEOPLE.reduce((a,b) => balances[a] < balances[b] ? a : b);
+    const mostGets = PEOPLE.reduce((a,b) => balances[a] > balances[b] ? a : b);
+    const titleRows = (balances[mostOwes] < -0.01 || balances[mostGets] > 0.01) ?
+      `<div style="display:flex;justify-content:space-between;padding:.5rem .85rem;background:var(--navy-m);border-bottom:1px solid rgba(255,255,255,.07);font-size:11px;letter-spacing:.04em;">
+        <span style="color:var(--rust);font-family:'Bebas Neue',sans-serif;font-size:13px;">🚢 Hafennutte: ${mostOwes}</span>
+        <span style="color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:13px;">Pimp: ${mostGets} 🤑</span>
+      </div>` : '';
+
     let rows = '';
     if (!transactions.length) {
       rows = '<div class="summary-row"><span>Alles ausgeglichen ✓</span></div>';
@@ -173,6 +182,7 @@ function render() {
     }
     sumEl.innerHTML = `<div class="summary-card">
       <div class="summary-header">Wer schuldet wem was</div>
+      ${titleRows}
       ${rows}
       <div class="total-row"><span>Gesamt</span><span>${total.toFixed(2)} €</span></div>
     </div>`;
