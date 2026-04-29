@@ -89,12 +89,16 @@
   <div class="section-title">Ausgaben</div>
   <div id="expenses"></div>
 
+  <div style="margin-top:1.5rem;text-align:center;">
+    <button class="btn" id="clear-btn" style="background:var(--rust);border-color:var(--rust);font-size:11px;padding:.4rem .9rem;letter-spacing:.08em;">Alle Ausgaben löschen</button>
+  </div>
+
   <div class="footer">⚓<br>Hamburch · 2025</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { firebaseConfig } from "./firebase.js";
 
 const app = initializeApp(firebaseConfig);
@@ -203,6 +207,11 @@ onValue(expRef, snap => {
   document.getElementById('status').textContent = '';
   render();
 }, () => { document.getElementById('status').textContent = 'Verbindungsfehler'; });
+
+document.getElementById('clear-btn').addEventListener('click', async () => {
+  if (!confirm('Alle Ausgaben wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return;
+  await set(expRef, null);
+});
 
 document.getElementById('add-btn').addEventListener('click', async () => {
   const title = document.getElementById('exp-title').value.trim();

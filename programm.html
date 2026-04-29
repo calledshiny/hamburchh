@@ -90,12 +90,16 @@
   <div class="status" id="status">Verbinde...</div>
   <div id="activities"></div>
 
+  <div style="margin-top:1.5rem;text-align:center;">
+    <button class="btn" id="clear-btn" style="background:var(--rust);border-color:var(--rust);font-size:11px;padding:.4rem .9rem;letter-spacing:.08em;">Alle Vorschläge löschen</button>
+  </div>
+
   <div class="footer">⚓<br>Hamburch · 2025</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, runTransaction, serverTimestamp, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { firebaseConfig } from "./firebase.js";
 
 const app = initializeApp(firebaseConfig);
@@ -161,6 +165,12 @@ onValue(actRef, snap => {
   document.getElementById('status').textContent = '';
   render();
 }, () => { document.getElementById('status').textContent = 'Verbindungsfehler'; });
+
+document.getElementById('clear-btn').addEventListener('click', async () => {
+  if (!confirm('Alle Aktivitätsvorschläge wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return;
+  await set(actRef, null);
+  localStorage.removeItem('hh_prog_votes');
+});
 
 document.getElementById('add-btn').addEventListener('click', async () => {
   const title = document.getElementById('act-title').value.trim();
