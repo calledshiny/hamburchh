@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kasse – Hamburch</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.expense{background:var(--paper);border:2px solid var(--ink);padding:.7rem .85rem;box-shadow:3px 3px 0 var(--ink);margin-bottom:8px;position:relative}
+.exp-inner{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
+.exp-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;color:var(--ink);line-height:1.1}
+.exp-meta{font-size:10px;color:var(--ink-f);margin-top:2px;line-height:1.5}
+.exp-amount{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--ink);text-align:right;line-height:1}
+.exp-paid{font-size:9px;color:var(--ink-f);text-align:right;letter-spacing:.04em}
+.add-form{background:var(--navy-m);border:1.5px solid var(--navy-l);padding:.9rem;margin-bottom:1rem}
+.add-form .form-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.1em;color:var(--gold);margin-bottom:.6rem}
+.form-row{margin-bottom:.5rem}
+.form-row label{font-size:10px;color:#7a9ab8;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:3px}
+.summary-card{background:var(--paper);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);overflow:hidden;margin-bottom:8px}
+.summary-header{background:var(--ink);padding:.5rem .85rem;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.1em;color:var(--paper)}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem .85rem;border-bottom:1px solid rgba(24,18,10,.1);font-size:12px}
+.summary-row:last-child{border-bottom:none}
+.owes{color:var(--rust);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.04em}
+.gets{color:var(--success);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.04em}
+.empty{font-size:12px;color:#3a5a78;letter-spacing:.04em;padding:1.5rem 0;text-align:center}
+.total-row{display:flex;justify-content:space-between;padding:.6rem .85rem;background:var(--paper-d);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.06em;border-top:2px solid var(--ink)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hdr">
+    <div class="auth-row">
+      <div class="auth">Hafenbehörde Hamburg<br>Abt. Finanzen & Ausgleich</div>
+      <div class="docn">Formular HH-K/3<br>Gemeinschaftskasse</div>
+    </div>
+    <div class="title-row">
+      <div class="main-title">Kas-<br>se.</div>
+      <div class="stamp">GEPRÜFT<br>UND<br>RICHTIG<br>⚓</div>
+    </div>
+    <div class="subtitle">Ausgaben erfassen · Automatischer Ausgleich · Hamburg-Reise 2025</div>
+  </div>
+
+  <nav class="nav">
+    <a href="index.html" class="nav-btn">← Dossier</a>
+    <a href="fahrt.html" class="nav-btn">Fahrt</a>
+    <a href="programm.html" class="nav-btn">Programm</a>
+  </nav>
+
+  <div class="notice">
+    <strong>§3</strong> Ausgaben eintragen, wer hat was bezahlt und für wen. Am Ende berechnet die Kasse automatisch wer wem wie viel schuldet.
+  </div>
+
+  <!-- ADD FORM -->
+  <div class="add-form">
+    <div class="form-title">+ Ausgabe eintragen</div>
+    <div class="form-row">
+      <label>Beschreibung</label>
+      <input class="input" id="exp-title" placeholder="z.B. Mittagessen Fischmarkt" maxlength="60">
+    </div>
+    <div class="form-row">
+      <label>Betrag (€)</label>
+      <input class="input" id="exp-amount" type="number" min="0.01" step="0.01" placeholder="0.00">
+    </div>
+    <div class="form-row">
+      <label>Bezahlt von</label>
+      <select class="input" id="exp-who">
+        <option value="">— Person wählen —</option>
+        <option>Justin</option><option>Julien</option><option>Pauline</option>
+        <option>Emelie</option><option>Tim</option><option>Denis</option><option>Paul</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Aufgeteilt auf</label>
+      <div id="split-checkboxes" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;">
+        <!-- filled by JS -->
+      </div>
+    </div>
+    <button class="btn" id="add-btn" style="width:100%;margin-top:.5rem;">Eintragen</button>
+  </div>
+
+  <div class="status" id="status">Verbinde...</div>
+
+  <!-- SUMMARY -->
+  <div class="section-title">Ausgleich</div>
+  <div id="summary"><div class="empty">Noch keine Ausgaben.</div></div>
+
+  <!-- EXPENSES LIST -->
+  <div class="section-title">Ausgaben</div>
+  <div id="expenses"></div>
+
+  <div class="footer">⚓<br>Hamburch · 2025</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { firebaseConfig } from "./firebase.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const expRef = ref(db, 'kasse');
+
+const PEOPLE = ['Justin','Julien','Pauline','Emelie','Tim','Denis','Paul'];
+
+// Build split checkboxes
+const cb = document.getElementById('split-checkboxes');
+PEOPLE.forEach(p => {
+  const label = document.createElement('label');
+  label.style.cssText = 'display:flex;align-items:center;gap:4px;font-size:11px;color:#c8bfa8;cursor:pointer;';
+  label.innerHTML = `<input type="checkbox" value="${p}" checked style="accent-color:var(--gold);"> ${p}`;
+  cb.appendChild(label);
+});
+
+let data = {};
+
+function calcSettlement(expenses) {
+  const balances = {};
+  PEOPLE.forEach(p => balances[p] = 0);
+
+  Object.values(expenses).forEach(exp => {
+    const split = exp.split || [];
+    if (!split.length) return;
+    const share = exp.amount / split.length;
+    balances[exp.who] = (balances[exp.who] || 0) + exp.amount;
+    split.forEach(p => { balances[p] = (balances[p] || 0) - share; });
+  });
+
+  // Simplify: greedy settlement
+  const transactions = [];
+  const pos = PEOPLE.filter(p => balances[p] > 0.01).map(p => ({p, amt: balances[p]}));
+  const neg = PEOPLE.filter(p => balances[p] < -0.01).map(p => ({p, amt: -balances[p]}));
+  pos.sort((a,b) => b.amt - a.amt);
+  neg.sort((a,b) => b.amt - a.amt);
+
+  let i=0, j=0;
+  while(i<pos.length && j<neg.length) {
+    const amt = Math.min(pos[i].amt, neg[j].amt);
+    if (amt > 0.01) transactions.push({from: neg[j].p, to: pos[i].p, amt});
+    pos[i].amt -= amt;
+    neg[j].amt -= amt;
+    if (pos[i].amt < 0.01) i++;
+    if (neg[j].amt < 0.01) j++;
+  }
+  return { balances, transactions };
+}
+
+function render() {
+  const expenses = Object.values(data);
+  const expEl = document.getElementById('expenses');
+  const sumEl = document.getElementById('summary');
+
+  const total = expenses.reduce((s,e) => s+(e.amount||0), 0);
+
+  // Summary
+  if (!expenses.length) {
+    sumEl.innerHTML = '<div class="empty">Noch keine Ausgaben.</div>';
+  } else {
+    const { transactions, balances } = calcSettlement(data);
+    let rows = '';
+    if (!transactions.length) {
+      rows = '<div class="summary-row"><span>Alles ausgeglichen ✓</span></div>';
+    } else {
+      rows = transactions.map(t =>
+        `<div class="summary-row">
+          <span>${t.from}</span>
+          <span class="owes">schuldet ${t.to}</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--ink);">${t.amt.toFixed(2)} €</span>
+        </div>`
+      ).join('');
+    }
+    sumEl.innerHTML = `<div class="summary-card">
+      <div class="summary-header">Wer schuldet wem was</div>
+      ${rows}
+      <div class="total-row"><span>Gesamt</span><span>${total.toFixed(2)} €</span></div>
+    </div>`;
+  }
+
+  // Expense list
+  if (!expenses.length) {
+    expEl.innerHTML = '<div class="empty">Keine Ausgaben eingetragen.</div>';
+  } else {
+    const items = Object.entries(data).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
+    expEl.innerHTML = items.map(([id, exp]) =>
+      `<div class="expense" data-id="${id}">
+        <div class="exp-inner">
+          <div>
+            <div class="exp-title">${exp.title}</div>
+            <div class="exp-meta">Bezahlt von <strong>${exp.who}</strong> · Aufgeteilt auf ${(exp.split||[]).join(', ')}</div>
+          </div>
+          <div>
+            <div class="exp-amount">${(exp.amount||0).toFixed(2)} €</div>
+            <div class="exp-paid">÷ ${(exp.split||[]).length} Pers.</div>
+          </div>
+        </div>
+      </div>`
+    ).join('');
+  }
+}
+
+onValue(expRef, snap => {
+  data = snap.val() || {};
+  document.getElementById('status').textContent = '';
+  render();
+}, () => { document.getElementById('status').textContent = 'Verbindungsfehler'; });
+
+document.getElementById('add-btn').addEventListener('click', async () => {
+  const title = document.getElementById('exp-title').value.trim();
+  const amount = parseFloat(document.getElementById('exp-amount').value);
+  const who = document.getElementById('exp-who').value;
+  const split = [...document.querySelectorAll('#split-checkboxes input:checked')].map(c=>c.value);
+  if (!title || !who || isNaN(amount) || amount <= 0 || !split.length) {
+    alert('Bitte alle Felder ausfüllen.');
+    return;
+  }
+  await push(expRef, { title, amount, who, split, ts: Date.now() });
+  document.getElementById('exp-title').value = '';
+  document.getElementById('exp-amount').value = '';
+  document.getElementById('exp-who').value = '';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hamburch — Amtliches Reisedossier</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="auth-row">
+      <div class="auth">Hafenbehörde Hamburg<br>Abt. Gruppenreisen</div>
+      <div class="docn">Dossier HH-25<br>Hamburg · 2025</div>
+    </div>
+    <div class="title-row">
+      <div class="main-title">Ham-<br>burch.</div>
+      <div class="stamp">AMTLICH<br>BEGLAU-<br>BIGT<br>⚓</div>
+    </div>
+    <div class="subtitle">Amtliches Reisedossier · 7 Personen · Hafenstadt Hamburg</div>
+  </div>
+
+  <!-- NOTICE -->
+  <div class="notice">
+    <strong>§1</strong> Dieses Dossier enthält alle relevanten Unterlagen zur geplanten Gruppenreise. Alle Beschlüsse sind durch Mehrheitsvotum zu fassen.
+  </div>
+
+  <!-- MODULE CARDS -->
+  <div class="section-title">Dokumente</div>
+
+  <a href="fahrt.html" style="text-decoration:none;display:block;">
+    <div class="card" style="cursor:pointer;transition:transform .08s,box-shadow .08s;" onmousedown="this.style.transform='translate(2px,2px)';this.style.boxShadow='1px 1px 0 var(--ink)'" onmouseup="this.style.transform='';this.style.boxShadow=''" ontouchstart="this.style.transform='translate(2px,2px)';this.style.boxShadow='1px 1px 0 var(--ink)'" ontouchend="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div class="card-label">Formular HH-7/2</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.04em;color:var(--ink);line-height:1.1;">Fahrzeugeinteilung</div>
+          <div style="font-size:11px;color:var(--ink-f);margin-top:4px;line-height:1.5;">Wer fährt mit wem. 16 Möglichkeiten.<br>Abstimmung läuft.</div>
+        </div>
+        <div style="font-size:2rem;opacity:.3;">→</div>
+      </div>
+      <div style="margin-top:.75rem;padding-top:.6rem;border-top:1px solid rgba(24,18,10,.12);display:flex;gap:6px;">
+        <span class="tag tag-rust">Voting offen</span>
+        <span class="tag tag-navy">Skoda · Mokka</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="programm.html" style="text-decoration:none;display:block;">
+    <div class="card" style="cursor:pointer;transition:transform .08s,box-shadow .08s;" onmousedown="this.style.transform='translate(2px,2px)';this.style.boxShadow='1px 1px 0 var(--ink)'" onmouseup="this.style.transform='';this.style.boxShadow=''" ontouchstart="this.style.transform='translate(2px,2px)';this.style.boxShadow='1px 1px 0 var(--ink)'" ontouchend="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div class="card-label">Formular HH-P/1</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.04em;color:var(--ink);line-height:1.1;">Programm & Aktivitäten</div>
+          <div style="font-size:11px;color:var(--ink-f);margin-top:4px;line-height:1.5;">Vorschläge einreichen.<br>Abstimmung über das Tagesprogramm.</div>
+        </div>
+        <div style="font-size:2rem;opacity:.3;">→</div>
+      </div>
+      <div style="margin-top:.75rem;padding-top:.6rem;border-top:1px solid rgba(24,18,10,.12);display:flex;gap:6px;">
+        <span class="tag tag-navy">Vorschläge offen</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="kasse.html" style="text-decoration:none;display:block;">
+    <div class="card" style="cursor:pointer;transition:transform .08s,box-shadow .08s;" onmousedown="this.style.transform='translate(2px,2px)';this.style.boxShadow='1px 1px 0 var(--ink)'" onmouseup="this.style.transform='';this.style.boxShadow=''" ontouchstart="this.style.transform='translate(2px,2px)';this.style.boxShadow='1px 1px 0 var(--ink)'" ontouchend="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div class="card-label">Formular HH-K/3</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.04em;color:var(--ink);line-height:1.1;">Gemeinschaftskasse</div>
+          <div style="font-size:11px;color:var(--ink-f);margin-top:4px;line-height:1.5;">Ausgaben erfassen.<br>Automatischer Ausgleich.</div>
+        </div>
+        <div style="font-size:2rem;opacity:.3;">→</div>
+      </div>
+      <div style="margin-top:.75rem;padding-top:.6rem;border-top:1px solid rgba(24,18,10,.12);display:flex;gap:6px;">
+        <span class="tag tag-navy">0 Ausgaben</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- CREW -->
+  <div class="section-title">Besatzung</div>
+  <div class="card">
+    <div class="card-label">7 Personen · Hamburg 2025</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:.5rem;">
+      <span style="font-family:'Special Elite',monospace;font-size:12px;color:var(--ink);background:var(--paper-d);border:1px solid rgba(24,18,10,.2);padding:3px 10px;">Justin</span>
+      <span style="font-family:'Special Elite',monospace;font-size:12px;color:var(--ink);background:var(--paper-d);border:1px solid rgba(24,18,10,.2);padding:3px 10px;">Julien</span>
+      <span style="font-family:'Special Elite',monospace;font-size:12px;color:var(--ink);background:var(--paper-d);border:1px solid rgba(24,18,10,.2);padding:3px 10px;">Pauline</span>
+      <span style="font-family:'Special Elite',monospace;font-size:12px;color:var(--ink);background:var(--paper-d);border:1px solid rgba(24,18,10,.2);padding:3px 10px;">Emelie</span>
+      <span style="font-family:'Special Elite',monospace;font-size:12px;color:var(--ink);background:var(--paper-d);border:1px solid rgba(24,18,10,.2);padding:3px 10px;">Tim</span>
+      <span style="font-family:'Special Elite',monospace;font-size:12px;color:var(--ink);background:var(--paper-d);border:1px solid rgba(24,18,10,.2);padding:3px 10px;">Denis</span>
+      <span style="font-family:'Special Elite',monospace;font-size:12px;color:var(--ink);background:var(--paper-d);border:1px solid rgba(24,18,10,.2);padding:3px 10px;">Paul</span>
+    </div>
+  </div>
+
+  <div class="footer">⚓<br>Hamburch · 2025</div>
+
+</div>
+</body>
+</html>

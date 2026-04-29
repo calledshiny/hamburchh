@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programm – Hamburch</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.activity{background:var(--paper);border:2px solid var(--ink);padding:.75rem .85rem;box-shadow:3px 3px 0 var(--ink);position:relative;margin-bottom:8px}
+.activity.voted{background:var(--navy-m);border-color:var(--gold);box-shadow:3px 3px 0 var(--gold)}
+.act-inner{display:grid;grid-template-columns:1fr 44px;gap:10px;align-items:center}
+.act-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.04em;color:var(--ink);line-height:1.1;margin-bottom:2px}
+.activity.voted .act-title{color:#d8ceb8}
+.act-meta{font-size:10px;color:var(--ink-f);letter-spacing:.03em}
+.activity.voted .act-meta{color:#7a8a9a}
+.act-who{font-size:10px;color:var(--ink-f);margin-top:3px;font-style:italic}
+.activity.voted .act-who{color:#6a7a8a}
+.vcol{text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.vnum{display:block;font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--ink);line-height:1}
+.activity.voted .vnum{color:var(--gold)}
+.vword{font-size:8px;letter-spacing:.06em;color:var(--ink-f);text-transform:uppercase}
+.activity.voted .vword{color:#6a7a8a}
+.add-form{background:var(--navy-m);border:1.5px solid var(--navy-l);padding:.9rem;margin-bottom:1rem}
+.add-form .form-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.1em;color:var(--gold);margin-bottom:.6rem}
+.form-row{margin-bottom:.5rem}
+.form-row label{font-size:10px;color:#7a9ab8;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:3px}
+.empty{font-size:12px;color:#3a5a78;letter-spacing:.04em;padding:1.5rem 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hdr">
+    <div class="auth-row">
+      <div class="auth">Hafenbehörde Hamburg<br>Abt. Freizeitgestaltung</div>
+      <div class="docn">Formular HH-P/1<br>Tagesprogramm</div>
+    </div>
+    <div class="title-row">
+      <div class="main-title">Pro-<br>gramm.</div>
+      <div class="stamp">ZUR<br>ABSTIM-<br>MUNG<br>⚓</div>
+    </div>
+    <div class="subtitle">Aktivitäten vorschlagen & abstimmen · Hamburg-Reise 2025</div>
+  </div>
+
+  <nav class="nav">
+    <a href="index.html" class="nav-btn">← Dossier</a>
+    <a href="fahrt.html" class="nav-btn">Fahrt</a>
+    <a href="kasse.html" class="nav-btn">Kasse</a>
+  </nav>
+
+  <div class="notice">
+    <strong>§2</strong> Aktivitäten einreichen, abstimmen. Die Besatzung entscheidet per Mehrheit über das Tagesprogramm.
+  </div>
+
+  <!-- ADD FORM -->
+  <div class="add-form">
+    <div class="form-title">+ Aktivität vorschlagen</div>
+    <div class="form-row">
+      <label>Aktivität</label>
+      <input class="input" id="act-title" placeholder="z.B. Miniatur Wunderland" maxlength="60">
+    </div>
+    <div class="form-row">
+      <label>Kategorie</label>
+      <select class="input" id="act-cat">
+        <option value="sightseeing">Sightseeing</option>
+        <option value="essen">Essen & Trinken</option>
+        <option value="aktivität">Aktivität</option>
+        <option value="nightlife">Nightlife</option>
+        <option value="sonstiges">Sonstiges</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Vorgeschlagen von</label>
+      <select class="input" id="act-who">
+        <option value="">— Person wählen —</option>
+        <option>Justin</option><option>Julien</option><option>Pauline</option>
+        <option>Emelie</option><option>Tim</option><option>Denis</option><option>Paul</option>
+      </select>
+    </div>
+    <button class="btn" id="add-btn" style="width:100%;margin-top:.25rem;">Einreichen</button>
+  </div>
+
+  <div class="bar">
+    <span class="bar-label">Sortierung —</span>
+    <button class="bar-btn active" data-sort="new">Neu</button>
+    <button class="bar-btn" data-sort="votes">Votes ↓</button>
+    <button class="bar-btn" data-sort="cat">Kategorie</button>
+  </div>
+
+  <div class="status" id="status">Verbinde...</div>
+  <div id="activities"></div>
+
+  <div class="footer">⚓<br>Hamburch · 2025</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { firebaseConfig } from "./firebase.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const actRef = ref(db, 'programm');
+
+const CAT_LABELS = {sightseeing:'Sightseeing',essen:'Essen & Trinken',aktivität:'Aktivität',nightlife:'Nightlife',sonstiges:'Sonstiges'};
+
+let data = {};
+let myVotes = {};
+let sortMode = 'new';
+
+try { myVotes = JSON.parse(localStorage.getItem('hh_prog_votes')||'{}'); } catch(e) {}
+
+function saveMyVotes() { try { localStorage.setItem('hh_prog_votes', JSON.stringify(myVotes)); } catch(e) {} }
+
+function render() {
+  const el = document.getElementById('activities');
+  let items = Object.entries(data).map(([id,v])=>({id,...v}));
+  if (!items.length) { el.innerHTML = '<div class="empty">Noch keine Vorschläge. Sei der Erste.</div>'; return; }
+
+  if (sortMode === 'votes') items.sort((a,b)=>(b.votes||0)-(a.votes||0));
+  else if (sortMode === 'cat') items.sort((a,b)=>a.cat.localeCompare(b.cat));
+  else items.sort((a,b)=>(b.ts||0)-(a.ts||0));
+
+  el.innerHTML = items.map(item => {
+    const v = item.votes || 0;
+    const isMe = myVotes[item.id];
+    return `<div class="activity${isMe?' voted':''}" data-id="${item.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div style="flex:1;">
+          <div style="margin-bottom:3px;"><span class="tag tag-navy" style="font-size:9px;">${CAT_LABELS[item.cat]||item.cat}</span></div>
+          <div class="act-title">${item.title}</div>
+          <div class="act-who">Vorgeschlagen von ${item.who}</div>
+        </div>
+        <div class="vcol" data-id="${item.id}">
+          <span class="vnum">${v}</span>
+          <span class="vword">${v===1?'Stimme':'Stimmen'}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.querySelectorAll('.vcol').forEach(col => {
+    col.addEventListener('click', async e => {
+      e.stopPropagation();
+      const id = col.dataset.id;
+      const wasVoted = myVotes[id];
+      if (wasVoted) {
+        delete myVotes[id];
+        await runTransaction(ref(db,`programm/${id}/votes`), v => Math.max(0,(v||0)-1));
+      } else {
+        myVotes[id] = true;
+        await runTransaction(ref(db,`programm/${id}/votes`), v => (v||0)+1);
+      }
+      saveMyVotes();
+    });
+  });
+}
+
+onValue(actRef, snap => {
+  data = snap.val() || {};
+  document.getElementById('status').textContent = '';
+  render();
+}, () => { document.getElementById('status').textContent = 'Verbindungsfehler'; });
+
+document.getElementById('add-btn').addEventListener('click', async () => {
+  const title = document.getElementById('act-title').value.trim();
+  const cat = document.getElementById('act-cat').value;
+  const who = document.getElementById('act-who').value;
+  if (!title || !who) { alert('Bitte Aktivität und Person ausfüllen.'); return; }
+  await push(actRef, { title, cat, who, votes: 0, ts: Date.now() });
+  document.getElementById('act-title').value = '';
+  document.getElementById('act-who').value = '';
+});
+
+document.querySelector('.bar').addEventListener('click', e => {
+  const btn = e.target.closest('.bar-btn');
+  if (!btn) return;
+  document.querySelectorAll('.bar-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  sortMode = btn.dataset.sort;
+  render();
+});
+</script>
+</body>
+</html>

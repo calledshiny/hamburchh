@@ -1,0 +1,351 @@
+/* ============================================
+   HAMBURCH — Gemeinsames Design System
+   Hafenbehörde Hamburg · Amtliches Reisedossier
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=DM+Sans:wght@400;500&display=swap');
+
+/* RESET */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* TOKENS */
+:root {
+  --paper:    #f4edd8;
+  --paper-d:  #e8dfc4;
+  --ink:      #18120a;
+  --ink-f:    #5a4a35;
+  --navy:     #0f1e2e;
+  --navy-m:   #1b3050;
+  --navy-l:   #2a4060;
+  --gold:     #c49a22;
+  --gold-d:   #8a6a10;
+  --rust:     #8b3318;
+  --rust-l:   #b84420;
+  --stamp-c:  #8b1a1a;
+  --sea:      #4a6a88;
+  --sea-l:    #7a9ab8;
+  --success:  #2d6a4f;
+}
+
+/* BASE */
+body {
+  background: var(--navy);
+  font-family: 'Special Elite', monospace;
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    170deg, transparent 0px, transparent 18px,
+    rgba(255,255,255,.012) 18px, rgba(255,255,255,.012) 19px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem .75rem 5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--paper);
+  border: 2.5px solid var(--ink);
+  padding: 1.1rem 1rem .9rem;
+  margin-bottom: .75rem;
+  position: relative;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.hdr::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(24,18,10,.18);
+  pointer-events: none;
+}
+
+.auth-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1.5px solid var(--ink);
+  padding-bottom: .55rem;
+  margin-bottom: .7rem;
+}
+
+.auth, .docn {
+  font-size: 9px;
+  letter-spacing: .1em;
+  color: var(--ink-f);
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+
+.docn { text-align: right; }
+
+.title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .5rem;
+}
+
+.main-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  line-height: .88;
+  letter-spacing: .02em;
+  color: var(--ink);
+  flex: 1;
+}
+
+.subtitle {
+  margin-top: .55rem;
+  font-size: 10px;
+  color: var(--ink-f);
+  letter-spacing: .04em;
+  line-height: 1.5;
+  border-top: 1px solid rgba(24,18,10,.15);
+  padding-top: .5rem;
+}
+
+/* ── STAMP ── */
+.stamp {
+  width: 70px;
+  height: 70px;
+  border: 2.5px solid var(--stamp-c);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 8px;
+  letter-spacing: .12em;
+  color: var(--stamp-c);
+  text-align: center;
+  transform: rotate(-10deg);
+  opacity: .8;
+  line-height: 1.4;
+  padding: 6px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.stamp::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--stamp-c);
+  border-radius: 50%;
+}
+
+/* ── NAV ── */
+.nav {
+  display: flex;
+  gap: 6px;
+  margin-bottom: .75rem;
+}
+
+.nav-btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: .1em;
+  padding: 6px 14px;
+  border: 1.5px solid var(--navy-l);
+  background: transparent;
+  color: var(--sea-l);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-btn:hover { background: rgba(255,255,255,.04); }
+.nav-btn.active { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+
+/* ── NOTICE ── */
+.notice {
+  background: var(--navy-m);
+  border-left: 3px solid var(--gold);
+  padding: .65rem .9rem;
+  margin-bottom: .75rem;
+  font-size: 11px;
+  color: #c8bfa8;
+  letter-spacing: .03em;
+  line-height: 1.6;
+}
+
+.notice strong {
+  color: var(--gold);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: .08em;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  padding: .8rem .9rem;
+  box-shadow: 3px 3px 0 var(--ink);
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.card-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 9px;
+  letter-spacing: .14em;
+  color: var(--ink-f);
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: .1em;
+  padding: 7px 16px;
+  border: 2px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all .08s;
+}
+
+.btn:active { opacity: .8; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+}
+
+.btn-danger {
+  border-color: var(--rust);
+  background: var(--rust);
+  color: var(--paper);
+}
+
+/* ── INPUTS ── */
+.input {
+  font-family: 'Special Elite', monospace;
+  font-size: 13px;
+  padding: 7px 10px;
+  border: 1.5px solid var(--ink-f);
+  background: var(--paper-d);
+  color: var(--ink);
+  width: 100%;
+  letter-spacing: .03em;
+  outline: none;
+}
+
+.input:focus { border-color: var(--ink); }
+
+.input::placeholder { color: var(--ink-f); opacity: .6; }
+
+select.input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235a4a35'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  cursor: pointer;
+}
+
+/* ── SORT / FILTER BAR ── */
+.bar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: .6rem;
+}
+
+.bar-label {
+  font-size: 10px;
+  color: var(--sea);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bar-btn {
+  font-family: 'Special Elite', monospace;
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 1.5px solid var(--navy-l);
+  background: transparent;
+  color: var(--sea-l);
+  cursor: pointer;
+  letter-spacing: .04em;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bar-btn.active { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+
+/* ── TAG / BADGE ── */
+.tag {
+  display: inline-block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10px;
+  letter-spacing: .1em;
+  padding: 1px 7px;
+}
+
+.tag-rust { background: var(--rust); color: var(--paper); }
+.tag-gold { background: var(--gold); color: var(--ink); }
+.tag-navy { background: var(--navy-m); color: #c8bfa8; }
+.tag-success { background: var(--success); color: #c8e6c9; }
+
+/* ── STATUS / HELPERS ── */
+.status {
+  font-size: 10px;
+  color: var(--sea);
+  letter-spacing: .06em;
+  margin-bottom: .5rem;
+  min-height: 14px;
+}
+
+.muted {
+  font-size: 10px;
+  color: #3a5a78;
+  letter-spacing: .06em;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: .08em;
+  color: var(--paper);
+  margin: 1.25rem 0 .6rem;
+  border-bottom: 1px solid var(--navy-l);
+  padding-bottom: .3rem;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--navy-l);
+  margin: 1rem 0;
+}
+
+/* ── FOOTER ── */
+.footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 10px;
+  color: #2a4a68;
+  letter-spacing: .06em;
+  line-height: 2.2;
+}
