@@ -24,7 +24,10 @@
 .add-form .form-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.1em;color:var(--gold);margin-bottom:.6rem}
 .form-row{margin-bottom:.5rem}
 .form-row label{font-size:10px;color:#7a9ab8;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:3px}
-.empty{font-size:12px;color:#3a5a78;letter-spacing:.04em;padding:1.5rem 0;text-align:center}
+.activity.done{opacity:.55}
+.activity.done .act-title{text-decoration:line-through}
+.done-btn{background:none;border:2px solid var(--ink-f);border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink-f);transition:all .15s}
+.done-btn.checked{background:var(--success);border-color:var(--success);color:#fff}
 </style>
 </head>
 <body>
@@ -95,7 +98,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, runTransaction, serverTimestamp, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, runTransaction, serverTimestamp, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { firebaseConfig } from "./firebase.js";
 
 const app = initializeApp(firebaseConfig);
@@ -122,12 +125,15 @@ function render() {
   if (sortMode === 'votes') items.sort((a,b)=>(b.votes||0)-(a.votes||0));
   else if (sortMode === 'cat') items.sort((a,b)=>a.cat.localeCompare(b.cat));
   else items.sort((a,b)=>(b.ts||0)-(a.ts||0));
+  items.sort((a,b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
 
   el.innerHTML = items.map(item => {
     const v = item.votes || 0;
     const isMe = myVotes[item.id];
-    return `<div class="activity${isMe?' voted':''}" data-id="${item.id}">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+    const isDone = !!item.done;
+    return `<div class="activity${isMe?' voted':''}${isDone?' done':''}" data-id="${item.id}">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <button class="done-btn${isDone?' checked':''}" data-id="${item.id}" title="Erledigt">${isDone?'✓':''}</button>
         <div style="flex:1;">
           <div style="margin-bottom:3px;"><span class="tag tag-navy" style="font-size:9px;">${CAT_LABELS[item.cat]||item.cat}</span></div>
           <div class="act-title">${item.title}</div>
@@ -141,6 +147,15 @@ function render() {
       </div>
     </div>`;
   }).join('');
+
+  el.querySelectorAll('.done-btn').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const isDone = !!data[id]?.done;
+      await set(ref(db, `programm/${id}/done`), !isDone);
+    });
+  });
 
   el.querySelectorAll('.del-btn').forEach(btn => {
     btn.addEventListener('click', async e => {
