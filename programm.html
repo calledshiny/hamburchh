@@ -178,6 +178,8 @@ function render() {
       const id = btn.dataset.id;
       const isDone = !!data[id]?.done;
       if (!isDone) {
+        btn.classList.add('checked');
+        btn.textContent = '✓';
         const card = btn.closest('.activity');
         const stamp = document.createElement('div');
         stamp.className = 'erledigt-stamp';
