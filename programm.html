@@ -173,6 +173,13 @@ onValue(actRef, snap => {
   render();
 }, () => { document.getElementById('status').textContent = 'Verbindungsfehler'; });
 
+document.getElementById('act-who').addEventListener('change', e => {
+  if (!e.target.value) return;
+  currentUser = e.target.value;
+  try { localStorage.setItem('hh_prog_user', currentUser); } catch(e) {}
+  render();
+});
+
 document.getElementById('add-btn').addEventListener('click', async () => {
   const title = document.getElementById('act-title').value.trim();
   const cat = document.getElementById('act-cat').value;

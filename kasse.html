@@ -213,6 +213,13 @@ onValue(expRef, snap => {
   render();
 }, () => { document.getElementById('status').textContent = 'Verbindungsfehler'; });
 
+document.getElementById('exp-who').addEventListener('change', e => {
+  if (!e.target.value) return;
+  currentUser = e.target.value;
+  try { localStorage.setItem('hh_kasse_user', currentUser); } catch(e) {}
+  render();
+});
+
 document.getElementById('add-btn').addEventListener('click', async () => {
   const title = document.getElementById('exp-title').value.trim();
   const amount = parseFloat(document.getElementById('exp-amount').value);
