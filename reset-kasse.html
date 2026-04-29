@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Kasse zurücksetzen</title>
+</head>
+<body>
+<p id="msg">Lösche alle Kasseneinträge...</p>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { firebaseConfig } from "./firebase.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+try {
+  await set(ref(db, 'kasse'), null);
+  document.getElementById('msg').textContent = '✓ Alle Kasseneinträge gelöscht. Du kannst diesen Tab schließen.';
+} catch(e) {
+  document.getElementById('msg').textContent = 'Fehler: ' + e.message;
+}
+</script>
+</body>
+</html>
