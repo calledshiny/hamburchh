@@ -142,33 +142,46 @@ function render() {
   else items.sort((a,b)=>(b.ts||0)-(a.ts||0));
   items.sort((a,b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
 
+  const maxVotes = Math.max(0, ...items.map(i => i.votes || 0));
+
+  function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
+  function cardColors(v, isDone) {
+    if (isDone || maxVotes === 0 || v === 0) return {
+      bg: 'var(--paper)', border: 'var(--ink)', shadow: 'var(--ink)',
+      title: 'var(--ink)', meta: 'var(--ink-f)', vote: 'var(--ink)'
+    };
+    const t = v / maxVotes;
+    // paper #f4edd8 → navy-m #1b3050
+    const bg = `rgb(${lerp(244,27,t)},${lerp(237,48,t)},${lerp(216,80,t)})`;
+    // border: ink #18120a → gold #c49a22
+    const border = `rgb(${lerp(24,196,t)},${lerp(18,154,t)},${lerp(10,34,t)})`;
+    const shadow = border;
+    // title: ink #18120a → light #d8ceb8
+    const title = t > 0.3 ? `rgb(${lerp(24,216,t)},${lerp(18,206,t)},${lerp(10,184,t)})` : 'var(--ink)';
+    const meta  = t > 0.3 ? `rgb(${lerp(90,122,t)},${lerp(74,138,t)},${lerp(53,154,t)})` : 'var(--ink-f)';
+    const vote  = t > 0.3 ? `rgb(${lerp(24,196,t)},${lerp(18,154,t)},${lerp(10,34,t)})` : 'var(--ink)';
+    return { bg, border, shadow, title, meta, vote };
+  }
+
   el.innerHTML = items.map(item => {
     const v = item.votes || 0;
     const isMe = myVotes[item.id];
     const isDone = !!item.done;
-    const maxVotes = Math.max(1, ...items.map(i => i.votes || 0));
-    const ratio = v / maxVotes;
-    const bgAlpha = (ratio * 0.85).toFixed(2);
-    const isDeep = ratio > 0.35;
-    const cardStyle = v > 0 && !isDone
-      ? `background:rgba(8,28,46,${bgAlpha});border-color:${isDeep?'rgba(180,150,60,.55)':'var(--ink)'};box-shadow:3px 3px 0 ${isDeep?'rgba(180,150,60,.35)':'var(--ink)'}`
-      : '';
-    const titleColor = isDeep && v > 0 && !isDone ? '#d8ceb8' : 'var(--ink)';
-    const metaColor  = isDeep && v > 0 && !isDone ? '#7a8a9a' : 'var(--ink-f)';
-    const vColor     = isDeep && v > 0 && !isDone ? 'var(--gold)' : 'var(--ink)';
+    const c = cardColors(v, isDone);
+    const cardStyle = `background:${c.bg};border-color:${c.border};box-shadow:3px 3px 0 ${c.shadow}`;
     return `<div class="activity${isDone?' done':''}" style="${cardStyle}" data-id="${item.id}">
       ${isDone ? '<div class="erledigt-stamp">ERLEDIGT</div>' : ''}
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
         <button class="done-btn${isDone?' checked':''}" data-id="${item.id}" title="Erledigt">${isDone?'✓':''}</button>
         <div style="flex:1;">
           <div style="margin-bottom:3px;"><span class="tag tag-navy" style="font-size:9px;">${CAT_LABELS[item.cat]||item.cat}</span></div>
-          <div class="act-title" style="color:${titleColor}">${item.title}</div>
-          <div class="act-who" style="color:${metaColor}">Vorgeschlagen von ${item.who}</div>
+          <div class="act-title" style="color:${c.title}">${item.title}</div>
+          <div class="act-who" style="color:${c.meta}">Vorgeschlagen von ${item.who}</div>
           ${item.who === currentUser ? `<button class="del-btn" data-id="${item.id}" style="background:none;border:none;color:var(--rust);font-size:11px;cursor:pointer;letter-spacing:.04em;padding:0;margin-top:4px;">✕ löschen</button>` : ''}
         </div>
         <div class="vcol" data-id="${item.id}">
-          <span class="vnum" style="color:${isMe?'var(--gold)':vColor}">${v}</span>
-          <span class="vword" style="color:${metaColor}">${v===1?'Stimme':'Stimmen'}</span>
+          <span class="vnum" style="color:${isMe?'var(--gold)':c.vote}">${v}</span>
+          <span class="vword" style="color:${c.meta}">${v===1?'Stimme':'Stimmen'}</span>
         </div>
       </div>
     </div>`;
