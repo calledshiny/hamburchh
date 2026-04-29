@@ -6,10 +6,10 @@
 <title>Programm – Hamburch</title>
 <link rel="stylesheet" href="style.css">
 <style>
-.activity{background:var(--paper);border:2px solid var(--ink);padding:.75rem .85rem;box-shadow:3px 3px 0 var(--ink);position:relative;margin-bottom:8px}
+.activity{background:var(--paper);border:2px solid var(--ink);padding:.75rem .85rem;box-shadow:3px 3px 0 var(--ink);position:relative;margin-bottom:8px;overflow:hidden}
 .activity.voted{background:var(--navy-m);border-color:var(--gold);box-shadow:3px 3px 0 var(--gold)}
 .act-inner{display:grid;grid-template-columns:1fr 44px;gap:10px;align-items:center}
-.act-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.04em;color:var(--ink);line-height:1.1;margin-bottom:2px}
+.act-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.04em;color:var(--ink);line-height:1.1;margin-bottom:2px;transition:text-decoration .1s}
 .activity.voted .act-title{color:#d8ceb8}
 .act-meta{font-size:10px;color:var(--ink-f);letter-spacing:.03em}
 .activity.voted .act-meta{color:#7a8a9a}
@@ -24,10 +24,33 @@
 .add-form .form-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.1em;color:var(--gold);margin-bottom:.6rem}
 .form-row{margin-bottom:.5rem}
 .form-row label{font-size:10px;color:#7a9ab8;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:3px}
-.activity.done{opacity:.55}
+.activity.done{opacity:.5}
 .activity.done .act-title{text-decoration:line-through}
-.done-btn{background:none;border:2px solid var(--ink-f);border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink-f);transition:all .15s}
+.done-btn{background:none;border:2px solid var(--ink-f);border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink-f)}
 .done-btn.checked{background:var(--success);border-color:var(--success);color:#fff}
+.erledigt-stamp{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(2.5) rotate(-12deg);
+  opacity:0;
+  pointer-events:none;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.3rem;
+  letter-spacing:.18em;
+  color:var(--rust);
+  border:3px solid var(--rust);
+  padding:.15rem .5rem;
+  line-height:1.2;
+  text-align:center;
+  z-index:10;
+  box-shadow:inset 0 0 0 1px var(--rust);
+}
+@keyframes stamp-press{
+  0%  {transform:translate(-50%,-50%) scale(2.2) rotate(-12deg);opacity:0}
+  45% {transform:translate(-50%,-50%) scale(0.9) rotate(-12deg);opacity:.9}
+  65% {transform:translate(-50%,-50%) scale(1.05) rotate(-12deg);opacity:1}
+  100%{transform:translate(-50%,-50%) scale(1) rotate(-12deg);opacity:1}
+}
+.erledigt-stamp.stamping{animation:stamp-press .35s cubic-bezier(.2,.8,.4,1) forwards}
 </style>
 </head>
 <body>
@@ -132,6 +155,7 @@ function render() {
     const isMe = myVotes[item.id];
     const isDone = !!item.done;
     return `<div class="activity${isMe?' voted':''}${isDone?' done':''}" data-id="${item.id}">
+      ${isDone ? '<div class="erledigt-stamp">ERLEDIGT</div>' : ''}
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
         <button class="done-btn${isDone?' checked':''}" data-id="${item.id}" title="Erledigt">${isDone?'✓':''}</button>
         <div style="flex:1;">
@@ -153,6 +177,17 @@ function render() {
       e.stopPropagation();
       const id = btn.dataset.id;
       const isDone = !!data[id]?.done;
+      if (!isDone) {
+        const card = btn.closest('.activity');
+        const stamp = document.createElement('div');
+        stamp.className = 'erledigt-stamp';
+        stamp.textContent = 'ERLEDIGT';
+        card.appendChild(stamp);
+        requestAnimationFrame(() => stamp.classList.add('stamping'));
+        await new Promise(r => setTimeout(r, 380));
+        card.classList.add('done');
+        card.querySelector('.act-title').style.textDecoration = 'line-through';
+      }
       await set(ref(db, `programm/${id}/done`), !isDone);
     });
   });
