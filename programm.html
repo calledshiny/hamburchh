@@ -90,16 +90,12 @@
   <div class="status" id="status">Verbinde...</div>
   <div id="activities"></div>
 
-  <div style="margin-top:1.5rem;text-align:center;">
-    <button class="btn" id="clear-btn" style="background:var(--rust);border-color:var(--rust);font-size:11px;padding:.4rem .9rem;letter-spacing:.08em;">Alle Vorschläge löschen</button>
-  </div>
-
   <div class="footer">⚓<br>Hamburch · 2025</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, runTransaction, serverTimestamp, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, runTransaction, serverTimestamp, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { firebaseConfig } from "./firebase.js";
 
 const app = initializeApp(firebaseConfig);
@@ -111,8 +107,10 @@ const CAT_LABELS = {sightseeing:'Sightseeing',essen:'Essen & Trinken',aktivität
 let data = {};
 let myVotes = {};
 let sortMode = 'new';
+let currentUser = '';
 
 try { myVotes = JSON.parse(localStorage.getItem('hh_prog_votes')||'{}'); } catch(e) {}
+try { currentUser = localStorage.getItem('hh_prog_user') || ''; } catch(e) {}
 
 function saveMyVotes() { try { localStorage.setItem('hh_prog_votes', JSON.stringify(myVotes)); } catch(e) {} }
 
@@ -134,6 +132,7 @@ function render() {
           <div style="margin-bottom:3px;"><span class="tag tag-navy" style="font-size:9px;">${CAT_LABELS[item.cat]||item.cat}</span></div>
           <div class="act-title">${item.title}</div>
           <div class="act-who">Vorgeschlagen von ${item.who}</div>
+          ${item.who === currentUser ? `<button class="del-btn" data-id="${item.id}" style="background:none;border:none;color:var(--rust);font-size:11px;cursor:pointer;letter-spacing:.04em;padding:0;margin-top:4px;">✕ löschen</button>` : ''}
         </div>
         <div class="vcol" data-id="${item.id}">
           <span class="vnum">${v}</span>
@@ -142,6 +141,14 @@ function render() {
       </div>
     </div>`;
   }).join('');
+
+  el.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      if (!confirm('Diesen Vorschlag löschen?')) return;
+      await remove(ref(db, `programm/${btn.dataset.id}`));
+    });
+  });
 
   el.querySelectorAll('.vcol').forEach(col => {
     col.addEventListener('click', async e => {
@@ -166,18 +173,14 @@ onValue(actRef, snap => {
   render();
 }, () => { document.getElementById('status').textContent = 'Verbindungsfehler'; });
 
-document.getElementById('clear-btn').addEventListener('click', async () => {
-  if (!confirm('Alle Aktivitätsvorschläge wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return;
-  await set(actRef, null);
-  localStorage.removeItem('hh_prog_votes');
-});
-
 document.getElementById('add-btn').addEventListener('click', async () => {
   const title = document.getElementById('act-title').value.trim();
   const cat = document.getElementById('act-cat').value;
   const who = document.getElementById('act-who').value;
   if (!title || !who) { alert('Bitte Aktivität und Person ausfüllen.'); return; }
   await push(actRef, { title, cat, who, votes: 0, ts: Date.now() });
+  currentUser = who;
+  try { localStorage.setItem('hh_prog_user', who); } catch(e) {}
   document.getElementById('act-title').value = '';
   document.getElementById('act-who').value = '';
 });

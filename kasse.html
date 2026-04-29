@@ -89,16 +89,12 @@
   <div class="section-title">Ausgaben</div>
   <div id="expenses"></div>
 
-  <div style="margin-top:1.5rem;text-align:center;">
-    <button class="btn" id="clear-btn" style="background:var(--rust);border-color:var(--rust);font-size:11px;padding:.4rem .9rem;letter-spacing:.08em;">Alle Ausgaben löschen</button>
-  </div>
-
   <div class="footer">⚓<br>Hamburch · 2025</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { firebaseConfig } from "./firebase.js";
 
 const app = initializeApp(firebaseConfig);
@@ -117,6 +113,8 @@ PEOPLE.forEach(p => {
 });
 
 let data = {};
+let currentUser = '';
+try { currentUser = localStorage.getItem('hh_kasse_user') || ''; } catch(e) {}
 
 function calcSettlement(expenses) {
   const balances = {};
@@ -195,10 +193,17 @@ function render() {
           <div>
             <div class="exp-amount">${(exp.amount||0).toFixed(2)} €</div>
             <div class="exp-paid">÷ ${(exp.split||[]).length} Pers.</div>
+            ${exp.who === currentUser ? `<div style="text-align:right;margin-top:4px;"><button class="del-btn" data-id="${id}" style="background:none;border:none;color:var(--rust);font-size:11px;cursor:pointer;letter-spacing:.04em;padding:0;">✕ löschen</button></div>` : ''}
           </div>
         </div>
       </div>`
     ).join('');
+    expEl.querySelectorAll('.del-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Diese Ausgabe löschen?')) return;
+        await remove(ref(db, `kasse/${btn.dataset.id}`));
+      });
+    });
   }
 }
 
@@ -207,11 +212,6 @@ onValue(expRef, snap => {
   document.getElementById('status').textContent = '';
   render();
 }, () => { document.getElementById('status').textContent = 'Verbindungsfehler'; });
-
-document.getElementById('clear-btn').addEventListener('click', async () => {
-  if (!confirm('Alle Ausgaben wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return;
-  await set(expRef, null);
-});
 
 document.getElementById('add-btn').addEventListener('click', async () => {
   const title = document.getElementById('exp-title').value.trim();
@@ -223,6 +223,8 @@ document.getElementById('add-btn').addEventListener('click', async () => {
     return;
   }
   await push(expRef, { title, amount, who, split, ts: Date.now() });
+  currentUser = who;
+  try { localStorage.setItem('hh_kasse_user', who); } catch(e) {}
   document.getElementById('exp-title').value = '';
   document.getElementById('exp-amount').value = '';
   document.getElementById('exp-who').value = '';
